@@ -10,19 +10,41 @@
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 <script type="text/javascript">
-	var model = {
+	/* var model = {
 			user: 'adam',
 			items: [
 			        {action: 'Buy Flowers', done: false},
 			        {action: 'Get Shoes', done: false},
 			        {action: 'Collect Tickets', done: true},
 			        {action: 'Call Joe', done: false}]
+	}; */
+	
+	/* 구분 */
+	
+	//model 객체 생성
+	var model = {
+			user: 'adam'
 	};
+	
 	var todoApp = angular.module("todoApp", []);
 	
+	//Ajax 요청을 통해 할 일 목록 데이터를 JSON 데이터로 받아서 model의 items 속성으로 추가한다
+	//run method는 AngularJS가 초기 설정을 마치는 시점에 한 번만 실행할 함수를 parameter로 받는다
+	//$http를 parameter로 지정하여 $http 서비스 객체를 AngularJS에 요청 -> parameter를 사용해 필요한 기능을 AngularJS에게 알려주는 방식을 dependency injection이라고 한다 
+	todoApp.run(function($http){
+		//$http 서비스 객체를 사용하여 저수준 Ajax 요청을 통해 json 데이터를 받는다
+		//$http 서비스는 저수준 Ajax요청에 대한 접근 기능 제공
+		//get() method의 결과는 Promise로서, 이 객체는 미래에 완료될 일을 나타내는 데 사용된다.
+		$http.get("todo.json").success(function(data){
+			model.items = data;
+		});
+	});
+	
 	todoApp.controller("ToDoCtrl", function($scope){
+		//$scope객체에 todo 속성을 생성하고, model을 할당
 		$scope.todo = model;
 		
+		//model의 items의 객체들에 대해 done 속성이 false인 것들의 개수 파악(체크된 항목 수 체크)
 		$scope.incompleteCount = function(){
 			var count = 0;
 			angular.forEach($scope.todo.items, function(item){
@@ -33,8 +55,32 @@
 			return count;
 		}
 		
+		//체크된 항목의 개수가 0~2개면 label-warning을 반환 3개 이상이면 label-succss를 반환
+		//각 상황에 대해 다른 class를 적용 시킴으로써 bootstrap을 이용해 다른 스타일 적용
 		$scope.warningLevel = function(){
 			return $scope.incompleteCount() < 3 ? "label-success" : "label-warning";
+		}
+		
+		//새 할 일 항목의 텍스트를 parameter로 받아 action 속성의 텍스트 값으로 설정하고, done 속성을 false로 지정해 데이터 모델에 새 객체를 추가
+		$scope.addNewItem = function(actionText){
+			$scope.todo.items.push({action:actionText, done:false});
+		}
+	});
+	
+	//커스텀 필터 생성
+	//AngularJS 모듈 객체에서 정의한 filter() method를 사용해 filter factory를 생성
+	//filter factory는 데이터 객체 셋을 필터링하는 데 사용할 함수를 반환
+	//items parameter는 AngularJS에서 제공하며, 필터링할 객체 셋이 된다.
+	//showComplete parameter는 done으로 표시된 할 일을 필터링된 데이터에 남길지 여부를 판단하는 데 사용(custom)
+	todoApp.filter("checkedItems", function(){
+		return function(items, showComplete){
+			var resultArr = [];
+			angular.forEach(items, function(item){
+				if(item.done == false || showComplete == true){
+					resultArr.push(item);
+				}
+			});
+			return resultArr;
 		}
 	});
 </script>
@@ -43,14 +89,19 @@
 	<div class="page-header">
 		<h1>
 			{{todo.user}}'s To Do List
+			<!-- ng-class 속성을 부여하여 $scope에 속성으로 정의된 warningLevel() 함수를 사용하여 동적으로 class를 바꾸어 bootstrap의 스타일을 적용 -->
+			<!-- ng-hide 속성을 부여하여 $scope에 속성으로 정의된 incompleteCount() 함수를 사용하여 리턴 값이 0이면 해당 엘리먼트를 숨김 -->
 			<span class="label label-default" ng-class="warningLevel()" ng-hide="incompleteCount() == 0">{{incompleteCount()}}</span>
 		</h1>
 	</div>
 	<div class="panel">
 		<div class="input-group">
-			<input class="form-control"/>
+			<!-- ng-model directive를 사용하여 컨트롤러 $scope내에서 동적으로 속성을 생성해주고, 사용자 입력을 처리하는 데 사용할 수 있는 동적인 모델 속성을 생성  -->
+			<input class="form-control" ng-model="actionText"/>
 			<span class="input-group-btn">
-				<input type="button" class="btn btn-default" value="Add"/>
+				<!-- ng-click directive를 사용하여 click 이벤트가 일어날 때 표현식을 실행하는 핸들러를 설정 -->
+				<!-- 표현식이 addNewItem 동작을 호출하고, paramter로 동적 속성인 actionText를 전달한다 -->
+				<input type="button" class="btn btn-default" ng-click="addNewItem(actionText)" value="Add"/>
 			</span>
 		</div>
 		<table class="table table-striped">
@@ -61,12 +112,33 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="item in todo.items">
-					<td>{{item.action}}</td>
-					<td><input type="checkbox" ng-model="item.done"/></td>
+				<!-- <tr ng-repeat="item in todo.items"> -->
+				
+				<!-- 구분 -->
+				
+				<!-- filter와 orderBy 필터를 사용 -->
+				<!-- filter : 설정된 기준에 따라 객체를 선택 -->
+				<!-- orderBy : 데이터를 정렬(정렬에 사용하려는 속성을 리터럴 값으로 지정. 리터럴로 지정하지 않으면 action이라는 $scope 속성을 찾는다. 상수를 지정해야할 때는 리터럴 값 사용) -->
+				<!-- <tr ng-repeat="item in todo.items | filter:{done:false} | orderBy:'action'"> -->
+				
+				<!-- 구분 -->
+				
+				<!-- 커스텀 필터 적용 -->
+				<!-- ng=repeat directive 내에 checkedItems 커스텀 필터를 적용하고 ng-model directive에 의해 동적으로 생성된 showComplete 모델 값을 커스텀 필터로 전달한다. -->
+				<tr ng-repeat="item in todo.items | checkedItems:showComplete | orderBy:'action'">
+					<td>{{item.action}}</td> <!-- 데이터 바인딩 표현식 -->
+					<td><input type="checkbox" ng-model="item.done"/></td> <!-- 양방향 바인딩(디렉티브 사용) -->
 				</tr>
 			</tbody>
 		</table>
+		
+		<div class="checkbox-inline">
+			<label>
+				<!-- ng-model direcvite를 사용하여 showComplete이라는 $scope 속성을 동적으로 생성하고, 사용자 입력을 처리 -->
+				<input type="checkbox" ng-model="showComplete"/>
+				Show Complete
+			</label>
+		</div>
 	</div>
 </body>
 </html>
