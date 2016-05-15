@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Javascript examples</title>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+<!-- 
+	script element를 사용해 javascrupt code를 html document에 추가한다.
+	src url을 통해 라이브러리 파일을 불러오거나, inline script를 생성한다.
+	브라우저가 script element를 만나면 브라우저는 정의된 순서대로 script element 내 javascript 명령을 바로 실행한다.(interpreting) 
+-->
+<script type="text/javascript">
+	//define function 
+	//javascript는 동적으로 타입이 지정된다(function을 정의할 때 parameter type을 선언하지 않아도 된다.)
+	function myFunc(name, weather){
+		console.log('This is a statement');	//web browser의 개발자 도구 console에 내용 출력
+		console.log('Hello ' + name + ".");
+		console.log("This is " + weather + 'today');	//javascript에서는 문자열을 ""또는 ''로 사용
+		console.log('\n');
+	}
+	
+	//function을 호출할 때 parameter의 개수는 function parameter의 개수와 일치하지 않아도 된다.
+	//function parameter의 개수보다 적인 parameter를 사용해 function을 호출하면 지정하지 않은
+	//parameter의 값을 javascript의 특수값인 undefined가 된다. function parameter보다 많은 개수의
+	//parameter를 사용해 호출하면 추가 parameter는 무시된다.
+	//이런 특징으로 인해 javascript에서는 function overloading을 할 수 없다.(polymorphism 불가)
+	//같은 이름으로 2개의 function을 정의하면 두번째 정의가 첫번째 정의를 대체한다.
+	//parameter의 개수 및 타입에 따라 다르게 동작하는 단일 함수를 정의하는 방법도 있지만 테스트 및 API가 지저분해 질 수 있으므로 지양
+	myFunc('Adam', 'sunny');
+	myFunc('Adam');
+	myFunc();
+	myFunc('Adam', 'sunny', 'rain');
+	
+	function returnFunc(name){
+		return 'Hello ' + name + '.';
+	}
+	console.log(returnFunc('Adam'));
+	
+	//javascript에서 function은 객체 형태로 전달 할 수 있으므로 특정 객체가 함수인지 판단하는 게 도움이 될 수 있다.
+	function printMessage(unknownObject){
+		//AngularJS의 utility method를 사용하여 function을 판별
+		if(angular.isFunction(unknownObject)){
+			unknownObject();
+		}else{
+			console.log(unknownObject);
+		}
+	}
+	
+	var variable1 = function sayHello(){
+		console.log('Hello');
+	};
+	
+	var variable2 = 'Goodbye';
+	
+	printMessage(variable1);
+	printMessage(variable2);
+	
+	//variable 정의시 var 키워드 사용
+	//기본적으로 local variable이며, function 밖에 선언한 variable은 global scope을 갖는다.
+	//일반적으로 AngularJS에서 global variable은 지양한다
+	var myGlobalVar = 'apples';
+	
+	function myFunc(name){
+		var myLocalVar = 'sunny';
+		return 'Hello ' + name + '. Today is ' + myLocalVar + '.';
+	}
+	console.log(myFunc('Adam'));
+</script>
+<script type="text/javascript">
+	console.log('I like ' + myGlobalVar);
+</script>
+<script type="text/javascript">
+	//angularJS에서 문자열 활용 메서드
+	//이 이외에도 string 타입에 관련한 자바스크립트 메서드들이 많다
+	var str = 'f';
+	console.log(angular.isString('Hello') + ' ' + angular.isArray(23));
+	console.log('I am ' + angular.uppercase('shouting'));
+	console.log('I am ' + angular.lowercase('WhiSpeRing'));
+</script>
+<script type="text/javascript">
+	//number 타입 사용
+	var daysInWeek = 7;
+	var pi = 3.14;
+	var hexValue = 0xFFFF;
+	
+	console.log(angular.isNumber(7) + ' ' + angular.isNumber('Hello'));
+	console.log(hexValue);
+</script>
+<script type="text/javascript">
+	//객체 생성
+	//javascript에서는 새 객체가 기능을 상속하게 해주는 프로토타입 상속을 지원한다.
+	var myData = new Object();
+	myData.name = 'Adam';
+	myData.weather = 'sunny';
+	//객체 생성 후 값을 대입해 속성을 정의할 수 있다.
+	
+	console.log('Hello ' + myData.name + '. ');
+	console.log('Today is ' + myData.weather + '. ');
+	
+	//객체 리터럴을 사용하여 객체를 생성할 수도 있다.
+	myData = {
+			name: 'Adam',
+			weather: 'sunny'
+	};
+	console.log('Hello ' + myData.name + '. ');
+	console.log('Today is ' + myData.weather + '. ');
+	
+	//객체에 메서드를 추가하여 사용할 수도 있다.
+	//객체에 정의한 함수 -> method
+	myData.printMessage = function(){
+		console.log('Hello ' + this.name + '. ');
+		console.log('Today is ' + this.weather + '. ');
+	}
+	myData.printMessage();
+	
+	var myExtendedObject = {
+			city: 'London'
+	};
+	//AngularJS에서는 angular.extend 메서드를 통해 한 객체의 속성과 메서드를 다른 객체로 쉽게 복사할 수 있게 해준다(prototyping)
+	angular.extend(myExtendedObject, myData);
+	
+	console.log(myExtendedObject.name);
+	console.log(myExtendedObject.city);
+	console.log(myExtendedObject['name']);	//배열 구문과 index를 사용하여 attribute에 접근할 수 있다.
+	
+	//loop를 통해 객체의 속성에 차례로 접근할 수 있다.
+	for(var prop in myExtendedObject){
+		console.log('name : ' + prop + ' Value : ' + myExtendedObject[prop]);
+	}
+	
+	angular.forEach(myExtendedObject, function(value, key){
+		console.log('name : ' + key + ' Value : ' + value);
+	});
+	
+	//객체의 속성을 제거하려면 delete를 사용한다.
+	delete myExtendedObject['name'];
+	delete myExtendedObject.weather;
+	console.log(myExtendedObject);
+	console.log('name' in myExtendedObject);	//in 키워드를 사용하면 객체에 해당 속성이 있는지 알 수 있다.
+</script>
+<script type="text/javascript">
+	var name = 'Adam';
+	
+	if(name == 'Adam'){
+		console.log('Name is Adam');
+	}else if(name == 'Jacqui'){
+		console.log('Name is Jacqui');
+	}else{
+		console.log('Name is neither Adam or Jacqui');
+	}
+	
+	switch(name){
+	case 'Adam':
+		console.log('Name is Adam');
+		break;
+	case 'Jacqui':
+		console.log('Name is Jacqui');
+		break;
+	default:
+		console.log('Name is neither Adam or Jacqui');
+		break;
+	}
+</script>
+<script type="text/javascript">
+	//동등 연산자, 항등 연산자
+	//동등 연산자 : 같은 타입으로 형변환 후 비교
+	//항등 연산자 : 값과 타입이 같은지 검사
+	var firstVal = 5;
+	var secondVal = '5';
+	
+	//동등 연산자
+	if(firstVal == secondVal){
+		console.log('They are the same');
+	}else{
+		console.log('They are not the same');
+	}
+	
+	//항등 연산자
+	if(firstVal === secondVal){
+		console.log('They are the same');
+	}else{
+		console.log('They are not the same');
+	}
+	
+	//javascript의 primitive type은 값으로 비교하지만, javascript객체는 참조를 통해 비교한다
+	function MyData(name, waether){
+		this.name = name;
+		this.weather = waether;
+	}
+	
+	var myData1 = new MyData('Adam', 'sunny');
+	var myData2 = new MyData('Adam', 'sunny');
+	var myData3 = myData2;
+	
+	console.log('Test1 : ' + (myData1 == myData2));
+	console.log('Test2 : ' + (myData2 == myData3));
+	console.log('Test3 : ' + (myData1 === myData2));
+	console.log('Test4 : ' + (myData2 === myData3));
+</script>
+<script type="text/javascript">
+	//숫자의 문자열 변환
+	//toString() : 값을 문자열로 반환
+	//toString(2), toString(8), toString(16) : 2진수, 8진수, 16진수를 사용해 숫자를 표현
+	//toFixed(n) : 소수점 n자리를 사용해 실수를 표현
+	//toExponential(n) : 지수 표기법을 사용해 소수점 이전 한 자리와 소수점 이후 n자리로 숫자를 표현
+	//toPrecision(n) : 필요하다면 지수 표기법을 사용해 n개의 소수점으로 숫자를 표현
+	console.log((5).toString() + String(5));
+	
+	//문자열의 숫자 변환
+	//Number(str) : 지정한 문자열을 파싱해 정수 또는 실수를 생성
+	//parseInt(str) : 지정한 문자열을 파싱해 정수값을 생성
+	//parseFloat(str) : 지정한 문자열을 파싱해 정수 또는 실수값을 생성
+	console.log(Number('5') + Number('5'));
+</script>
+<script type="text/javascript">
+	//배열 활용
+	var myArray = new Array();
+	myArray[0] = 100;
+	myArray[1] = 'Adam';
+	myArray[2] = true;
+	
+	myArray = [100, 'Adam', true];	//위와 같음
+	
+	//배열 감지
+	console.log(angular.isArray(myArray));
+	console.log(myArray instanceof Array);
+	
+	//배열 내용 열거
+	for(var i = 0; i < myArray.length; i++){
+		console.log('index : ' + i + ' -> ' + myArray[i]);
+	}
+	myArray.forEach(function(value, index){
+		console.log('index : ' + index + ' -> ' + value);
+	});
+	angular.forEach(myArray, function(value, index){
+		console.log('index : ' + index + ' -> ' + value);
+	});
+</script>
+<script type="text/javascript">
+	//undefined와 null
+	//undefined : 값이 대입되지 않은 변수를 읽거나 존재하지 않는 속성값을 읽으려고할 때 반환(아무 값도 정의되지 않았을 때 반환)
+	//null : 값을 대입했지만 이 값이 유효한 객체, 문자열, 숫자, 불리언이 아님을 나타내려고 할 때 사용('없는 값'이라는 갑을 정의한 경우)
+	var myData4 = {
+			name : 'Adam'
+	};
+	console.log('Var : ' + myData4.weather);
+	console.log('Prop : ' + ('weather' in myData4));
+	
+	myData4.weather = 'sunny';
+	console.log('Var : ' + myData4.weather);
+	console.log('Prop : ' + ('weather' in myData4));
+	
+	myData4.weather = null;
+	console.log('Var : ' + myData4.weather);
+	console.log('Prop : ' + ('weather' in myData4));
+	
+	//속성이 null이나 undefined인지 검사
+	myData4 = {
+			name: 'Adam',
+			city: null
+	};
+	if(!myData4.name){
+		console.log('name is null or undefined');
+	}else {
+		console.log('name is not null or undefined');
+	}
+	
+	if(!myData4.city){
+		console.log('city is null or undefined');
+	}else {
+		console.log('city is not null or undefined');
+	}
+</script>
+</head>
+<body>
+	This is a simple example
+</body>
+</html>
